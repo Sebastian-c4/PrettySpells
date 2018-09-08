@@ -1,0 +1,171 @@
+BACKUP ~PrettySpells/backup~
+AUTHOR ~c4demon@gmail.com~
+
+AUTO_EVAL_STRINGS
+ASK_EVERY_COMPONENT
+
+VERSION ~1.0.2~
+
+ALWAYS
+	
+	OUTER_SPRINT anims ~%MOD_FOLDER%/animations~
+	
+	PRINT @1000
+	
+END
+
+
+
+LANGUAGE 	~English~ 					
+					~english~
+					~PrettySpells/tra/english/setup.tra~
+
+LANGUAGE 	~简体中文~ 					
+					~schinese~
+					~PrettySpells/prompts-%WEIDU_OS%.tra~
+					~PrettySpells/tra/schinese/setup.tra~
+
+
+
+/* Add different refined animations for different types defensive spells/skills(some copied from EE game) */
+/* 为不同类型的防护型法术和能力设置不同的精制动画(部分来自增强版) */
+BEGIN @1
+DESIGNATED 1
+
+// patch exe file
+/*
+	spturni2 //法术反转/投射物反弹
+	spmagglo //法术免疫/消耗性免疫/无法侦测
+	spmagglo //法术陷阱 原版ONLY
+*/
+
+OUTER_SET exeok =0
+
+COPY - ~%MOD_FOLDER%/exe_offset.2da~ ~%MOD_FOLDER%/exe_offset.2da~
+	COUNT_2DA_COLS cols
+	READ_2DA_ENTRIES_NOW rows cols
+	FOR (i=0;i<rows;++i) BEGIN
+		READ_2DA_ENTRY_FORMER rows i 0 file
+		PATCH_IF (exeok=0) && (FILE_EXISTS ~%file%.exe~) BEGIN
+			READ_2DA_ENTRY_FORMER rows i 1 offset1
+			READ_2DA_ENTRY_FORMER rows i 2 value1
+			READ_2DA_ENTRY_FORMER rows i 3 offset2
+			READ_2DA_ENTRY_FORMER rows i 4 value2
+			READ_2DA_ENTRY_FORMER rows i 5 offset3
+			READ_2DA_ENTRY_FORMER rows i 6 value3
+			INNER_ACTION BEGIN
+				COPY ~%file%.exe~ ~%file%.exe~
+					READ_ASCII ~%offset1%~ now1 (8)
+					READ_ASCII ~%offset2%~ now2 (8)
+					PATCH_IF ~%offset3%~ !=0 BEGIN
+						READ_ASCII ~%offset3%~ now3 (8)
+					END
+					PATCH_IF
+						(~%value1%~ STR_EQ ~%now1%~) &&
+						(~%value2%~ STR_EQ ~%now2%~) &&
+						((~%value3%~ STR_EQ ~%now3%~) || (offset3=0))
+					BEGIN
+						SET exeok=1
+						WRITE_ASCIIE ~%offset1%~ ~~
+						WRITE_ASCIIE ~%offset2%~ ~~
+						PATCH_IF ~%offset3%~ !=0 BEGIN
+							READ_ASCII ~%offset3%~ ~~ (8)
+						END
+					END
+					BUT_ONLY
+			END
+		END
+	END
+
+ACTION_IF exeok=0 BEGIN
+	FAIL @999
+END ELSE BEGIN
+
+	ACTION_DEFINE_ASSOCIATIVE_ARRAY animations BEGIN
+		// 69		=>	z#splimm
+		197 	=> 	spturni2
+		200 	=> 	spturni2
+		201 	=>	z#splimm
+		204		=>	z#splimm
+		259		=>	spmagglo
+	END
+
+	COPY ~%anims%/SpellProtections~ override
+
+	//法术免疫/消耗性免疫/法术陷阱/消耗性反弹/反弹投射物
+	COPY_EXISTING_REGEXP GLOB ~.*\.spl~ override ~.*\.itm~ override
+		PHP_EACH animations AS match_opcode => resource BEGIN
+			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode opcode=215 parameter1=0 parameter2=1 STR_VAR resource END
+		END
+	BUT_ONLY
+
+	//防护魔法能量
+	ACTION_FOR_EACH spell IN dw#0w606 dw#sw606 spwi606 BEGIN
+		COPY_EXISTING ~%spell%.spl~ override
+			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfme END
+		IF_EXISTS BUT_ONLY
+	END
+
+	//防护能量
+	COPY_EXISTING spwi803.spl override
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfe END
+	BUT_ONLY
+	
+END
+
+
+
+/* Add unique animations for spells provide protection from melee weapons */
+/* 为各类防护武器的法术添加独有动画 */
+BEGIN @2
+DESIGNATED 2
+
+COPY ~%anims%/MeleeProtections~ override
+ACTION_FOR_EACH spell IN dw#0w611 dw#mlpmw spin686 spwi611 BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwa END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwb END
+	IF_EXISTS BUT_ONLY
+END
+
+ACTION_FOR_EACH spell IN spwi708 BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1a END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1b END
+	IF_EXISTS BUT_ONLY
+END
+
+ACTION_FOR_EACH spell IN spwi808 dw#mlman  BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2a END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2b END
+	IF_EXISTS BUT_ONLY
+END
+
+ACTION_FOR_EACH spell IN spwi907 melspl01  BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3a END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3b END
+	IF_EXISTS BUT_ONLY
+END
+
+/* Refine animations for Chromatic Orb, Poison, Fire Ball, Lightning Bolt, Melf's Minute Meteors, Wail of the Banshee and Demilich Howl */
+/* 美化五彩球、毒素、火球术、闪电术、马友夫微流星、女妖之嚎和半神巫妖之嚎的动画 */
+BEGIN @3
+DESIGNATED 3
+
+COPY ~%anims%/Offensive~ override
+
+COPY_EXISTING spwi118.spl override
+	LPF ALTER_EFFECT INT_VAR match_opcode=141 match_parameter2=25 opcode=215 parameter1=0 parameter2=1 timing=0 duration=1 parameter2=1 STR_VAR resource=z#orb END
+BUT_ONLY
+
+COPY_EXISTING sppr411.spl override
+	LPF ALTER_EFFECT STR_VAR match_resource=poison resource=z#poison END
+BUT_ONLY
+
+ACTION_FOR_EACH spell IN fl#banwa spin681 spin789 spin820 spwi913 BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF ADD_SPELL_EFFECT INT_VAR insert_point=0 opcode=215 target=1 duration=1 parameter1=0 parameter2=1 STR_VAR resource=z#wail END
+	IF_EXISTS BUT_ONLY
+END
