@@ -4,13 +4,18 @@ AUTHOR ~c4demon@gmail.com~
 AUTO_EVAL_STRINGS
 ASK_EVERY_COMPONENT
 
-VERSION ~1.0.2~
+VERSION ~1.0.3~
 
 ALWAYS
 	
 	OUTER_SPRINT anims ~%MOD_FOLDER%/animations~
+	OUTER_SPRINT pros ~%MOD_FOLDER%/projectiles~
+	
+	INCLUDE ~%MOD_FOLDER%/lib/_A7functions.tph~
+	INCLUDE ~%MOD_FOLDER%/lib/_functions.tpa~
 	
 	PRINT @1000
+	SILENT
 	
 END
 
@@ -18,12 +23,12 @@ END
 
 LANGUAGE 	~English~ 					
 					~english~
-					~PrettySpells/tra/english/setup.tra~
+					~PrettySpells/languages/english/setup.tra~
 
 LANGUAGE 	~简体中文~ 					
 					~schinese~
-					~PrettySpells/prompts-%WEIDU_OS%.tra~
-					~PrettySpells/tra/schinese/setup.tra~
+					~PrettySpells/languages/schinese/prompts-%WEIDU_OS%.tra~
+					~PrettySpells/languages/schinese/setup.tra~
 
 
 
@@ -41,7 +46,7 @@ DESIGNATED 1
 
 OUTER_SET exeok =0
 
-COPY - ~%MOD_FOLDER%/exe_offset.2da~ ~%MOD_FOLDER%/exe_offset.2da~
+COPY - ~%MOD_FOLDER%/lib/exe_offset.2da~ ~%MOD_FOLDER%/lib/exe_offset.2da~
 	COUNT_2DA_COLS cols
 	READ_2DA_ENTRIES_NOW rows cols
 	FOR (i=0;i<rows;++i) BEGIN
@@ -95,20 +100,22 @@ END ELSE BEGIN
 	//法术免疫/消耗性免疫/法术陷阱/消耗性反弹/反弹投射物
 	COPY_EXISTING_REGEXP GLOB ~.*\.spl~ override ~.*\.itm~ override
 		PHP_EACH animations AS match_opcode => resource BEGIN
-			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode opcode=215 parameter1=0 parameter2=1 STR_VAR resource END
+			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode opcode=215 parameter1=0 parameter2=1 STR_VAR resource insert=below END
 		END
 	BUT_ONLY
 
 	//防护魔法能量
 	ACTION_FOR_EACH spell IN dw#0w606 dw#sw606 spwi606 BEGIN
 		COPY_EXISTING ~%spell%.spl~ override
-			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfme END
+			LPF DELETE_EFFECT INT_VAR match_opcode=215 END
+			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfme insert=below END
 		IF_EXISTS BUT_ONLY
 	END
 
 	//防护能量
 	COPY_EXISTING spwi803.spl override
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfe END
+		LPF DELETE_EFFECT INT_VAR match_opcode=215 END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfe insert=below END
 	BUT_ONLY
 	
 END
@@ -123,49 +130,238 @@ DESIGNATED 2
 COPY ~%anims%/MeleeProtections~ override
 ACTION_FOR_EACH spell IN dw#0w611 dw#mlpmw spin686 spwi611 BEGIN
 	COPY_EXISTING ~%spell%.spl~ override
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwa END
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwb END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwa insert=below END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwb insert=below END
 	IF_EXISTS BUT_ONLY
 END
 
 ACTION_FOR_EACH spell IN spwi708 BEGIN
 	COPY_EXISTING ~%spell%.spl~ override
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1a END
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1b END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1a insert=below END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1b insert=below END
 	IF_EXISTS BUT_ONLY
 END
 
 ACTION_FOR_EACH spell IN spwi808 dw#mlman  BEGIN
 	COPY_EXISTING ~%spell%.spl~ override
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2a END
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2b END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2a insert=below END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2b insert=below END
 	IF_EXISTS BUT_ONLY
 END
 
 ACTION_FOR_EACH spell IN spwi907 melspl01  BEGIN
 	COPY_EXISTING ~%spell%.spl~ override
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3a END
-		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3b END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3a insert=below END
+		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3b insert=below END
 	IF_EXISTS BUT_ONLY
 END
 
-/* Refine animations for Chromatic Orb, Poison, Fire Ball, Lightning Bolt, Melf's Minute Meteors, Wail of the Banshee and Demilich Howl */
-/* 美化五彩球、毒素、火球术、闪电术、马友夫微流星、女妖之嚎和半神巫妖之嚎的动画 */
+/* Refine animations for Chromatic Orb, Fire Ball, Wand of Fire, Lightning Bolt, Wand of Lightning, Melf's Minute Meteors, Wail of the Banshee, Demilich Howl, Energy Blade and Bolt of Lightning, and apply unique visual effect to spell(s) and weapon(s) with poison effect. */
+/* 美化五彩球、火球术、火焰法杖、闪电术、闪电法杖、马友夫微流星、女妖之嚎、半神巫妖之嚎、魔能刃和雷电矢的动画，为附带中毒效果的法术和物品添加独特效果 */
 BEGIN @3
 DESIGNATED 3
 
-COPY ~%anims%/Offensive~ override
-
-COPY_EXISTING spwi118.spl override
-	LPF ALTER_EFFECT INT_VAR match_opcode=141 match_parameter2=25 opcode=215 parameter1=0 parameter2=1 timing=0 duration=1 parameter2=1 STR_VAR resource=z#orb END
-BUT_ONLY
-
-COPY_EXISTING sppr411.spl override
-	LPF ALTER_EFFECT STR_VAR match_resource=poison resource=z#poison END
-BUT_ONLY
-
-ACTION_FOR_EACH spell IN fl#banwa spin681 spin789 spin820 spwi913 BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
-		LPF ADD_SPELL_EFFECT INT_VAR insert_point=0 opcode=215 target=1 duration=1 parameter1=0 parameter2=1 STR_VAR resource=z#wail END
-	IF_EXISTS BUT_ONLY
+DEFINE_ACTION_FUNCTION find_spell_file
+	STR_VAR identifier = ~~
+	RET spell_file
+BEGIN
+	OUTER_SET value = IDS_OF_SYMBOL (~spell~ ~%identifier%~)
+	ACTION_IF value>0 BEGIN
+		OUTER_SNPRINT 1 type ~%value%~
+		OUTER_SNPRINT ~-3~ spell ~%value%~
+		ACTION_MATCH ~%type%~
+		WITH
+			1 BEGIN OUTER_SPRINT spell_file ~SPPR%spell%~ END
+			2 BEGIN OUTER_SPRINT spell_file ~SPWI%spell%~ END
+			3 BEGIN OUTER_SPRINT spell_file ~SPIN%spell%~ END
+			4 BEGIN OUTER_SPRINT spell_file ~SPCL%spell%~ END
+			DEFAULT
+		END
+	END ELSE OUTER_SPRINT spell_file ~%identifier%~
 END
+
+//五彩球
+COPY ~%anims%/Offensive/z#orb.bam~ override ~%anims%/Offensive/z#orb.vvc~ override
+
+LAF find_spell_file STR_VAR identifier=~WIZARD_CHROMATIC_ORB~ RET spell_file END
+COPY_EXISTING ~%spell_file%.spl~ override
+	LPF ALTER_EFFECT INT_VAR match_opcode=141 match_parameter2=25 opcode=215 parameter1=0 parameter2=1 timing=0 duration=1 parameter2=1 STR_VAR resource=z#orb END
+	IF_EXISTS BUT_ONLY
+
+//火球, 火焰法杖
+COPY ~%anims%/Offensive/z#firebl.bam~ override
+ADD_PROJECTILE ~%pros%/z#firebl.pro~
+
+LAF find_spell_file STR_VAR identifier=~WIZARD_FIREBALL~ RET spell_file END
+COPY_EXISTING ~%spell_file%.spl~ override
+	LPF ALTER_SPELL_HEADER INT_VAR projectile=~z#firebl~ END
+	IF_EXISTS BUT_ONLY
+	
+COPY_EXISTING wand05.itm override
+	GET_OFFSET_ARRAY header ITM_V10_HEADERS
+	PHP_EACH header AS int => index BEGIN
+		READ_SHORT index+0x2a pro
+		PATCH_IF pro= IDS_OF_SYMBOL (~projectl~ ~FIREBALL~) + 1 BEGIN
+			WRITE_SHORT index+0x2a ~%z#firebl%~
+		END
+	END
+	IF_EXISTS BUT_ONLY
+
+//闪电, 闪电法杖
+COPY ~%anims%/Offensive/z#lightb.bam~ override
+ADD_PROJECTILE ~%pros%/z#lightb.pro~
+
+LAF find_spell_file STR_VAR identifier=~WIZARD_LIGHTNING_BOLT~ RET spell_file END
+COPY_EXISTING ~%spell_file%.spl~ override
+	LPF ALTER_SPELL_HEADER INT_VAR projectile=~z#lightb~ END
+	IF_EXISTS BUT_ONLY
+	
+COPY_EXISTING wand07.itm override
+	GET_OFFSET_ARRAY header ITM_V10_HEADERS
+	PHP_EACH header AS int => index BEGIN
+		READ_SHORT index+0x2a pro
+		PATCH_IF pro= IDS_OF_SYMBOL (~projectl~ ~LIGHTB~) + 1 BEGIN
+			WRITE_SHORT index+0x2a ~%z#lightb%~
+		END
+	END
+	IF_EXISTS BUT_ONLY
+
+//小流星
+COPY ~%anims%/Offensive/z#melfmm.bam~ override
+ADD_PROJECTILE ~%pros%/z#melfmm.pro~
+
+LAF find_spell_file STR_VAR identifier=~WIZARD_MELF_METEOR~ RET spell_file END
+COPY_EXISTING ~%spell_file%.spl~ override
+	GET_OFFSET_ARRAY header SPL_V10_HEADERS
+	PHP_EACH header AS int => index BEGIN
+		GET_OFFSET_ARRAY2 effect index SPL_V10_HEAD_EFFECTS
+		PHP_EACH effect AS int => offset BEGIN
+			READ_SHORT offset opcode
+			PATCH_IF opcode=111 BEGIN
+				READ_ASCII offset+0x14 item
+				INNER_ACTION BEGIN
+					COPY_EXISTING ~%item%.itm~ override
+						LPF ALTER_ITEM_HEADER INT_VAR projectile=~z#melfmm~ END
+					IF_EXISTS BUT_ONLY
+				END
+			END
+		END
+	END
+	IF_EXISTS BUT_ONLY
+	
+//嚎叫系列
+COPY ~%anims%/Offensive/z#wail.bam~ override ~%anims%/Offensive/z#wail.vvc~ override
+
+ACTION_FOR_EACH identifier IN
+	fl#banwa
+	BANSHEE_WAIL
+	DEMILICH_DEATH
+	ELVEN_GUARD_WAIL
+	WIZARD_WAIL_OF_THE_BANSHEE
+BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		LPF ADD_SPELL_EFFECT INT_VAR opcode=215 target=1 timing=1 STR_VAR resource=z#wail END
+		IF_EXISTS BUT_ONLY
+END
+
+//魔能刃
+COPY ~%anims%/Offensive/z#enbld.bam~ override
+
+ACTION_FOR_EACH identifier IN
+	CLERIC_ENERGY_BLADES
+	WIZARD_ENERGY_BLADES
+BEGIN
+	COPY_EXISTING ~%spell%.spl~ override
+		GET_OFFSET_ARRAY header SPL_V10_HEADERS
+		PHP_EACH header AS int => index BEGIN
+			GET_OFFSET_ARRAY2 effect index SPL_V10_HEAD_EFFECTS
+			PHP_EACH effect AS int => offset BEGIN
+				READ_SHORT offset opcode
+				PATCH_IF opcode=111 BEGIN
+					READ_ASCII offset+0x14 item
+					INNER_ACTION BEGIN
+						COPY_EXISTING ~%item%.itm~ override
+							LPF ALTER_ITEM_HEADER INT_VAR projectile=~z#enbld~ END
+						IF_EXISTS BUT_ONLY
+					END
+				END
+			END
+		END
+		IF_EXISTS BUT_ONLY
+END
+
+//雷电矢
+ADD_PROJECTILE ~%pros%/z#bolt03.pro~
+
+COPY_EXISTING bolt03.itm override
+	GET_OFFSET_ARRAY header ITM_V10_HEADERS
+	PHP_EACH header AS int => index BEGIN
+		READ_SHORT index+0x2a pro
+		PATCH_IF pro= IDS_OF_SYMBOL (~projectl~ ~1bolt03~) + 1 BEGIN
+			WRITE_SHORT index+0x2a ~%z#bolt03%~
+		END
+	END
+	IF_EXISTS BUT_ONLY
+
+//中毒系列
+COPY ~%anims%/Offensive/z#poison.bam~ override ~%anims%/Offensive/z#poison.vvc~ override
+
+LAF find_spell_file STR_VAR identifier=~CLERIC_POISON~ RET spell_file END
+OUTER_SPRINT CLERIC_POISON_FILE ~%spell_file%~
+COPY_EXISTING ~%spell_file%.spl~ override
+	LPF ALTER_EFFECT INT_VAR match_opcode=215 STR_VAR resource=z#poison END
+	IF_EXISTS BUT_ONLY
+	
+OUTER_SET poisoned= IDS_OF_SYMBOL (~state~ ~STATE_POISONED~)
+LAF TO_HEX_NUMBER INT_VAR value=poisoned minDigits=8 prefix=1 RET poisoned=hexNumber END
+LAF ADD_SPLPROT_ENTRY INT_VAR stat=0x111 STR_VAR value=~%poisoned%~ relation=9 RET poisoned_row=index END
+
+LAF CREATE_EMPTY_SPELL STR_VAR name=z#poivvc END
+COPY_EXISTING z#poivvc.spl override
+	LPF ADD_SPELL_EFFECT INT_VAR opcode=215 target=2 timing=1 STR_VAR resource=z#poison END
+LAF CREATE_EFFECT INT_VAR opcode=326 target=2 timing=1 parameter2=poisoned_row STR_VAR resource=z#poivvc name=z#poivvc END
+	
+COPY_EXISTING_REGEXP ~.*\.\(spl\|itm\)~ override
+	SPRINT source_file ~%SOURCE_RES%~
+	PATCH_IF NOT ~%SOURCE_RES%~ STR_EQ ~%CLERIC_POISON_FILE%~ BEGIN
+		//GLOBAL
+		GET_OFFSET_ARRAY effect 0x6a 4 0x70 2 0x6e 2 0x30
+		PHP_EACH effect AS int => offset BEGIN
+			READ_SHORT offset opcode
+			PATCH_IF opcode=177 || opcode=248 || opcode=249 BEGIN
+				READ_ASCII offset+0x14 res
+				INNER_ACTION BEGIN
+					COPY_EXISTING - ~%res%.eff~ override
+						READ_LONG 0x10 opcode1
+						PATCH_IF opcode1=25 BEGIN SPRINT $~match_%source_file%~(~%opcode%~) ~%res%~ END
+					IF_EXISTS
+				END
+			END
+		END
+		//HEAD
+		PATCH_IF ~%SOURCE_EXT%~ STR_EQ ~spl~ BEGIN
+			GET_OFFSET_ARRAY header 0x64 4 0x68 2 0 0 0x28
+		END ELSE GET_OFFSET_ARRAY header 0x64 4 0x68 2 0 0 0x38
+		PHP_EACH header AS int => index BEGIN
+			GET_OFFSET_ARRAY2 effect index 0x6a 4 0x1e 2 0x20 2 0x30
+			PHP_EACH effect AS int => offset BEGIN
+				READ_SHORT offset opcode
+				PATCH_IF opcode=177 || opcode=248 || opcode=249 BEGIN
+					READ_ASCII offset+0x14 res
+					INNER_ACTION BEGIN
+						COPY_EXISTING - ~%res%.eff~ override
+							READ_LONG 0x10 opcode1
+							PATCH_IF opcode1=25 BEGIN
+								SPRINT $~match_%source_file%~(~%opcode%~) ~%res%~
+							END
+						IF_EXISTS
+					END
+				END
+			END
+		END
+		LPF CLONE_EFFECT INT_VAR silent=1 match_opcode=25 opcode=326 timing=1 duration=0 parameter1=0 parameter2=poisoned_row STR_VAR resource=z#poivvc END
+		PHP_EACH ~match_%source_file%~ AS match_opcode => match_resource BEGIN
+			LPF CLONE_EFFECT INT_VAR silent=1 match_opcode timing=1 duration=0 STR_VAR match_resource resource=z#poivvc END
+		END
+	END
+	BUT_ONLY
