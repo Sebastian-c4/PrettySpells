@@ -882,6 +882,25 @@ DEFINE_PATCH_FUNCTION item_flag RET valid moveable magical two_hand BEGIN
 	END
 END
 
+DEFINE_ACTION_FUNCTION find_spell_file
+	STR_VAR identifier = ~~
+	RET spell_file
+BEGIN
+	OUTER_SET value = IDS_OF_SYMBOL (~spell~ ~%identifier%~)
+	ACTION_IF value>0 BEGIN
+		OUTER_SNPRINT 1 type ~%value%~
+		OUTER_SNPRINT ~-3~ spell ~%value%~
+		ACTION_MATCH ~%type%~
+		WITH
+			1 BEGIN OUTER_SPRINT spell_file ~SPPR%spell%~ END
+			2 BEGIN OUTER_SPRINT spell_file ~SPWI%spell%~ END
+			3 BEGIN OUTER_SPRINT spell_file ~SPIN%spell%~ END
+			4 BEGIN OUTER_SPRINT spell_file ~SPCL%spell%~ END
+			DEFAULT
+		END
+	END ELSE OUTER_SPRINT spell_file ~%identifier%~
+END
+
 
 /* **************************************** */
 DEFINE_ACTION_FUNCTION cd_new_portrait_icon

@@ -4,7 +4,7 @@ AUTHOR ~c4demon@gmail.com~
 AUTO_EVAL_STRINGS
 ASK_EVERY_COMPONENT
 
-VERSION ~1.0.3~
+VERSION ~1.0.4~
 
 ALWAYS
 	
@@ -20,7 +20,6 @@ ALWAYS
 END
 
 
-
 LANGUAGE 	~English~ 					
 					~english~
 					~PrettySpells/languages/english/setup.tra~
@@ -32,8 +31,8 @@ LANGUAGE 	~简体中文~
 
 
 
-/* Add different refined animations for different types defensive spells/skills(some copied from EE game) */
-/* 为不同类型的防护型法术和能力设置不同的精制动画(部分来自增强版) */
+/* Add different refined animations for different types spell protection spells/skills. */
+/* 为不同类型的法术防护类型的法术和能力设置不同的精制动画 */
 BEGIN @1
 DESIGNATED 1
 
@@ -71,10 +70,10 @@ COPY - ~%MOD_FOLDER%/lib/exe_offset.2da~ ~%MOD_FOLDER%/lib/exe_offset.2da~
 						((~%value3%~ STR_EQ ~%now3%~) || (offset3=0))
 					BEGIN
 						SET exeok=1
-						WRITE_ASCIIE ~%offset1%~ ~~
-						WRITE_ASCIIE ~%offset2%~ ~~
+						WRITE_ASCII ~%offset1%~ ~~ (8)
+						WRITE_ASCII ~%offset2%~ ~~ (8)
 						PATCH_IF ~%offset3%~ !=0 BEGIN
-							READ_ASCII ~%offset3%~ ~~ (8)
+							WRITE_ASCII ~%offset3%~ ~~ (8)
 						END
 					END
 					BUT_ONLY
@@ -86,24 +85,26 @@ ACTION_IF exeok=0 BEGIN
 	FAIL @999
 END ELSE BEGIN
 
-	ACTION_DEFINE_ASSOCIATIVE_ARRAY animations BEGIN
+	ACTION_DEFINE_ASSOCIATIVE_ARRAY spell_prot BEGIN
 		// 69		=>	z#splimm
 		197 	=> 	spturni2
 		200 	=> 	spturni2
-		201 	=>	z#splimm
-		204		=>	z#splimm
-		259		=>	spmagglo
+		201 	=>	z#magglo
+		204		=>	z#spimmu
+		226		=>	z#spshld //原防魔能白圈
+		259		=>	z#sptrap //原防能量红圈
 	END
 
 	COPY ~%anims%/SpellProtections~ override
 
 	//法术免疫/消耗性免疫/法术陷阱/消耗性反弹/反弹投射物
 	COPY_EXISTING_REGEXP GLOB ~.*\.spl~ override ~.*\.itm~ override
-		PHP_EACH animations AS match_opcode => resource BEGIN
+		PHP_EACH spell_prot AS match_opcode => resource BEGIN
 			LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode opcode=215 parameter1=0 parameter2=1 STR_VAR resource insert=below END
 		END
 	BUT_ONLY
 
+	/*
 	//防护魔法能量
 	ACTION_FOR_EACH spell IN dw#0w606 dw#sw606 spwi606 BEGIN
 		COPY_EXISTING ~%spell%.spl~ override
@@ -117,43 +118,62 @@ END ELSE BEGIN
 		LPF DELETE_EFFECT INT_VAR match_opcode=215 END
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=31 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfe insert=below END
 	BUT_ONLY
-	
+	*/
+
 END
 
 
 
-/* Add unique animations for spells provide protection from melee weapons */
+/* Add unique animations for spells provide protection from weapon types */
 /* 为各类防护武器的法术添加独有动画 */
 BEGIN @2
 DESIGNATED 2
 
 COPY ~%anims%/MeleeProtections~ override
-ACTION_FOR_EACH spell IN dw#0w611 dw#mlpmw spin686 spwi611 BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
+
+ACTION_FOR_EACH identifier IN
+	dw#0w611
+	dw#mlpmw
+	PROTECTION_MAGIC_WEAPON_NOEFF
+	WIZARD_PROTECTION_FROM_MAGIC_WEAPONS
+BEGIN
+	LAF find_spell_file STR_VAR identifier RET spell_file END
+	COPY_EXISTING ~%spell_file%.spl~ override
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwa insert=below END
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfmwb insert=below END
-	IF_EXISTS BUT_ONLY
+		IF_EXISTS BUT_ONLY
 END
 
-ACTION_FOR_EACH spell IN spwi708 BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
+ACTION_FOR_EACH identifier IN
+	WIZARD_MANTLE
+BEGIN
+	LAF find_spell_file STR_VAR identifier RET spell_file END
+	COPY_EXISTING ~%spell_file%.spl~ override
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1a insert=below END
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw1b insert=below END
-	IF_EXISTS BUT_ONLY
+		IF_EXISTS BUT_ONLY
 END
 
-ACTION_FOR_EACH spell IN spwi808 dw#mlman  BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
+ACTION_FOR_EACH identifier IN
+	dw#mlman
+	WIZARD_IMPROVED_MANTLE
+BEGIN
+	LAF find_spell_file STR_VAR identifier RET spell_file END
+	COPY_EXISTING ~%spell_file%.spl~ override
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2a insert=below END
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw2b insert=below END
-	IF_EXISTS BUT_ONLY
+		IF_EXISTS BUT_ONLY
 END
 
-ACTION_FOR_EACH spell IN spwi907 melspl01  BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
+ACTION_FOR_EACH identifier IN
+	melspl01
+	WIZARD_ABSOLUTE_IMMUNITY
+BEGIN
+	LAF find_spell_file STR_VAR identifier RET spell_file END
+	COPY_EXISTING ~%spell_file%.spl~ override
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3a insert=below END
 		LPF CLONE_EFFECT INT_VAR multi_match=1 silent=1 match_opcode=120 opcode=215 parameter1=0 parameter2=1 STR_VAR resource=z#pfw3b insert=below END
-	IF_EXISTS BUT_ONLY
+		IF_EXISTS BUT_ONLY
 END
 
 /* Refine animations for Chromatic Orb, Fire Ball, Wand of Fire, Lightning Bolt, Wand of Lightning, Melf's Minute Meteors, Wail of the Banshee, Demilich Howl, Energy Blade and Bolt of Lightning, and apply unique visual effect to spell(s) and weapon(s) with poison effect. */
@@ -161,31 +181,12 @@ END
 BEGIN @3
 DESIGNATED 3
 
-DEFINE_ACTION_FUNCTION find_spell_file
-	STR_VAR identifier = ~~
-	RET spell_file
-BEGIN
-	OUTER_SET value = IDS_OF_SYMBOL (~spell~ ~%identifier%~)
-	ACTION_IF value>0 BEGIN
-		OUTER_SNPRINT 1 type ~%value%~
-		OUTER_SNPRINT ~-3~ spell ~%value%~
-		ACTION_MATCH ~%type%~
-		WITH
-			1 BEGIN OUTER_SPRINT spell_file ~SPPR%spell%~ END
-			2 BEGIN OUTER_SPRINT spell_file ~SPWI%spell%~ END
-			3 BEGIN OUTER_SPRINT spell_file ~SPIN%spell%~ END
-			4 BEGIN OUTER_SPRINT spell_file ~SPCL%spell%~ END
-			DEFAULT
-		END
-	END ELSE OUTER_SPRINT spell_file ~%identifier%~
-END
-
 //五彩球
 COPY ~%anims%/Offensive/z#orb.bam~ override ~%anims%/Offensive/z#orb.vvc~ override
 
 LAF find_spell_file STR_VAR identifier=~WIZARD_CHROMATIC_ORB~ RET spell_file END
 COPY_EXISTING ~%spell_file%.spl~ override
-	LPF ALTER_EFFECT INT_VAR match_opcode=141 match_parameter2=25 opcode=215 parameter1=0 parameter2=1 timing=0 duration=1 parameter2=1 STR_VAR resource=z#orb END
+	LPF ALTER_EFFECT INT_VAR match_opcode=141 match_parameter2=25 opcode=215 timing=1 duration=0 parameter1=0 parameter2=0 STR_VAR resource=z#orb END
 	IF_EXISTS BUT_ONLY
 
 //火球, 火焰法杖
@@ -259,7 +260,8 @@ ACTION_FOR_EACH identifier IN
 	ELVEN_GUARD_WAIL
 	WIZARD_WAIL_OF_THE_BANSHEE
 BEGIN
-	COPY_EXISTING ~%spell%.spl~ override
+	LAF find_spell_file STR_VAR identifier RET spell_file END
+	COPY_EXISTING ~%spell_file%.spl~ override
 		LPF ADD_SPELL_EFFECT INT_VAR opcode=215 target=1 timing=1 STR_VAR resource=z#wail END
 		IF_EXISTS BUT_ONLY
 END
