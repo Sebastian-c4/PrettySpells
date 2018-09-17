@@ -4,7 +4,7 @@ AUTHOR ~c4demon@gmail.com~
 AUTO_EVAL_STRINGS
 ASK_EVERY_COMPONENT
 
-VERSION ~1.0.4~
+VERSION ~1.0~
 
 ALWAYS
 	
@@ -26,7 +26,7 @@ LANGUAGE 	~English~
 
 LANGUAGE 	~¼òÌåÖÐÎÄ~ 					
 					~schinese~
-					~PrettySpells/languages/schinese/prompts-%WEIDU_OS%.tra~
+					~PrettySpells/languages/schinese/prompts/prompts-%WEIDU_OS%.tra~
 					~PrettySpells/languages/schinese/setup.tra~
 
 
