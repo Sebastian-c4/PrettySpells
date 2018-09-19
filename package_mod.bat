@@ -8,13 +8,13 @@ call "%~dp0..\ModPackaging\utilities\ie_games.bat"
 
 :: /* 修改一下4个变量，指定Mod的名字、版本、作者名字和Mod目录名，前3项将出现在Windows的安装程序界面，请勿使用中文 */
 set "mod_name=PrettySpells"
-set mod_version=v1.0
-set mod_author=c4_angel
-set mod_folder=PrettySpells
+set "mod_version=v1.0"
+set "mod_author=c4_angel"
+set "mod_folder=PrettySpells"
 
 :: /* 从以下项目中选择Mod所兼容的游戏环境并修改：*/
 :: /* %bg1%, %bg2%, %bgt%, %tutu%, %bgee%, %bgiiee%, %iwd1%, %iwdee%, %iwd2%, %iwd2ee%, %iwd-in-bg2%, %pst%, %pstee%, %eet% */
-set "compatible_games=%bg2%, %bgt%, %bgee%, %bgiiee%, or %eet%"
+set "compatible_games=%bg1%, %bg2%, %bgt%, %bgee%, %bgiiee%, or %eet%"
 
 :: /* 修改以下5个变量匹配你的Mod： */
 :: /* ico_folder：指定安装程序使用的图标和文本存放位置 */
